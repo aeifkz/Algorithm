@@ -12,7 +12,7 @@ def select_sort(x) :
     return
 
 
-def bubble_sort(x) :
+def insert_sort(x) :
     '''bubble sort O(n^2)'''
     if len(x) > 1 :
         for bottom in range(1,len(x)) :
@@ -36,11 +36,57 @@ def quick_sort(x) :
     return quick_sort(small) + medium + quick_sort(large)
 
 
+def bubble_sort(x) :
+    for top in range(len(x)) :
+        done = True
+        for bubble in range( len(x)-1, top , -1) :
+            if x[bubble] < x[bubble-1] :
+                x[bubble] , x[bubble-1] = x[bubble-1] , x[bubble]
+                done = False
+            if done :
+                return
 
 
-l = [random.random() for n in range(10)]
+def merge_sort(x) :
+
+    length = len(x)
+    
+    if length <=1 : 
+        return x
+    else :
+        y1 = merge_sort(x[0:length//2])
+        y2 = merge_sort(x[length//2:])
+        y = []
+
+        leny1 = len(y1)
+        leny2 = len(y2)
+        i1 = 0
+        i2 = 0
+
+	#don't use pop(0) , because it is O(n)
+	#better use queue
+        while i1<leny1 or i2 < leny2 :
+            if i1 == leny1 :
+                y = y + y2[i2:]
+                i2 = leny2
+            elif i2 == leny2 :
+                y = y + y1[i1:] 
+                i1 = leny1
+            elif y1[i1] < y2[i2] :
+                y.append(y1[i1])
+                i1 = i1+1
+            else :
+                y.append(y2[i2])
+                i2 = i2+1
+        return y             
+
+
+l = [random.random() for n in range(20)]
+print(l)
 #select_sort(l)
+#insert_sort(l)
 #bubble_sort(l)
 #l = quick_sort(l)
+l = merge_sort(l)
 print(l)
 
