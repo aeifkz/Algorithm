@@ -78,7 +78,41 @@ def merge_sort(x) :
             else :
                 y.append(y2[i2])
                 i2 = i2+1
-        return y             
+        return y
+
+#in place qsort
+def q_sort(x) :
+    first = 0
+    last = len(x)-1
+    qsort_engine(x,first,last)
+    return
+
+def qsort_engine(x,first,last) :
+    if first < last :
+        split_point = partition(x,first,last)
+        qsort_engine(x,first,split_point-1)
+        qsort_engine(x,split_point+1,last)
+    return
+
+def partition(x,first,last) :
+    pivot = x[first]
+    left = first + 1
+    right = last
+    done = False
+    while not done :
+        while left <= right and x[left]<= pivot :
+            left += 1
+
+        while right >= left and x[right] >= pivot :
+            right -= 1
+
+        if left > right :
+            done = True
+        else :
+            x[left] , x[right] = x[right] , x[left]
+
+    x[first] , x[right] = x[right] , x[first]
+    return right
 
 
 l = [random.random() for n in range(20)]
@@ -87,6 +121,7 @@ print(l)
 #insert_sort(l)
 #bubble_sort(l)
 #l = quick_sort(l)
-l = merge_sort(l)
+#l = merge_sort(l)
+q_sort(l)
 print(l)
 
