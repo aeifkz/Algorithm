@@ -115,13 +115,72 @@ def partition(x,first,last) :
     return right
 
 
-l = [random.random() for n in range(20)]
-print(l)
+
+def heap_sort(x) :
+    heapfy(x)
+    end = len(x)-1
+    while end > 0 :
+        x[end],x[0] = x[0],x[end]
+        end -= 1
+        shift_down(x,0,end)
+    return
+
+
+def heapfy(x) :
+    count = len(x)-1
+    add_to_heap = 1
+    while add_to_heap <= count :
+        shift_up(x,0,add_to_heap)
+        add_to_heap += 1    
+    return
+
+def shift_up(x,top,bottom) :
+    child = bottom
+    while child > top :
+        parent = (child-1)//2
+        if x[child] < x[parent] :
+            x[child] , x[parent] = x[parent] , x[child]
+            child = parent
+        else :
+            return
+
+
+def shift_down(x,top,bottom) :
+    if top >= bottom :
+        return
+    parent = top
+    lchild = parent*2+1
+    rchild = parent*2+2
+
+    #3 cases
+    if lchild > bottom :
+        pass
+    elif lchild == bottom :
+        if x[parent] > x[lchild] :
+            x[parent] , x[lchild] = x[lchild] , x[parent]
+    else :
+        if x[parent] > min(x[lchild],x[rchild]) :
+            if x[lchild] < x[rchild] :
+                x[parent] , x[lchild] = x[lchild] , x[parent]
+                #recursive lchild
+                shift_down(x,lchild,bottom)
+            else :
+                #recursive rchild
+                x[parent] , x[rchild] = x[rchild] , x[parent]
+                shift_down(x,rchild,bottom)
+    return
+    
+
+
+
+#l = [random.randint(0,100) for n in range(100000)]
+l = [random.random() for n in range(100000)]
+#print(l)
 #select_sort(l)
 #insert_sort(l)
 #bubble_sort(l)
 #l = quick_sort(l)
 #l = merge_sort(l)
-q_sort(l)
-print(l)
-
+#q_sort(l)
+heap_sort(l)
+#print(l)
