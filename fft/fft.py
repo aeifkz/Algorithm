@@ -29,14 +29,14 @@ def dft(x) :
 
 def fft(x) :
     N = len(x)
-    X = np.zeros(N,dtype=x.dtype)
+    X = np.zeros(N,dtype=complex)
     half_N = N//2
 
     if N==1 :
         X[0] = x[0]
     else :
-        x_even = np.array( [ x[2*k] for k in range(half_N) ] )
-        x_odd = np.array( [ x[2*l+1] for l in range(half_N) ] )
+        x_even = np.array( [ x[2*k] for k in range(half_N) ] , dtype=complex )
+        x_odd = np.array( [ x[2*l+1] for l in range(half_N) ] , dtype=complex )
         X_even = fft(x_even)
         X_odd = fft(x_odd)
         for m in range(N) :
@@ -53,14 +53,14 @@ def idft(X) :
 
 def ifft(X) :
     N = len(X)
-    x = np.zeros(N,dtype=X.dtype)
+    x = np.zeros(N,dtype=complex)
     half_N = N//2
 
     if N==1 :
         x[0] = X[0]
     else :
-        X_even = np.array( [ X[2*k] for k in range(half_N) ] )
-        X_odd = np.array( [ X[2*l+1] for l in range(half_N) ] )
+        X_even = np.array( [ X[2*k] for k in range(half_N) ] , dtype=complex )
+        X_odd = np.array( [ X[2*l+1] for l in range(half_N) ] , dtype=complex )
         x_even = ifft(X_even)
         x_odd = ifft(X_odd)
         for n in range(N) :
@@ -69,21 +69,24 @@ def ifft(X) :
    
 
 
-#sounds = np.array([ math.cos(2*math.pi*f1/N*n) + math.cos(2*math.pi*f2/N*n) for n in range(0,N+0) ])
+sounds = np.array([ math.cos(2*math.pi*f1/N*n) + math.cos(2*math.pi*f2/N*n) for n in range(0,N+0) ])
 
 phase = 0*math.pi
 
-sounds = np.array([ cmath.exp(1j*2*math.pi*f1/N*n + phase)   for n in range(N) ])
+#sounds = np.array([ cmath.exp(1j*2*math.pi*f1/N*n + phase)   for n in range(N) ])
 
-#fs , sounds = sw.read('/home/aeifkz/viola.wav') 
+#fs , sound = sw.read('/home/aeifkz/viola.wav') 
+
+#sounds = sound[2**18:2**18+1024]
 
 
 #r = dft(sounds)
 r = fft(sounds)
-plt.plot(sounds)
+#plt.plot(sounds)
+plt.plot(r)
 #s = idft(r)
 s = ifft(r) 
 #plt.plot(r.real)
 #plt.plot(r.imag)
-plt.plot(s)
+#plt.plot(s)
 plt.show()
