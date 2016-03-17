@@ -39,8 +39,14 @@ def fft(x) :
         x_odd = np.array( [ x[2*l+1] for l in range(half_N) ] , dtype=complex )
         X_even = fft(x_even)
         X_odd = fft(x_odd)
-        for m in range(N) :
-            X[m] = X_even[m % half_N] + cmath.exp(-1j*2*math.pi/N*m)*X_odd[m % half_N]
+        X_odd_mult = np.array( [ X_odd[m] * cmath.exp(-1j*2*math.pi/N*m) for m in range(half_N) ])
+
+        for m in range(half_N) :
+            X[m] = X_even[m % half_N] +  X_odd_mult[m%half_N]
+
+        for m in range(half_N,N) :
+            X[m] = X_even[m % half_N] - X_odd_mult[m%half_N]
+
     return X
 
 
@@ -50,8 +56,35 @@ def idft(X) :
                 for m in range(N)  ]  ) ) for n in  range(N) ])
     return x
 
-
 def ifft(X) :
+    return ifft_engine(X) / len(X)
+
+
+def ifft_engine(X) :
+    N = len(X)
+    x = np.zeros(N,dtype=complex)
+    half_N = N//2
+
+    if N==1 :
+        x[0] = X[0]
+    else :
+        X_even = np.array( [ X[2*k] for k in range(half_N) ] , dtype=complex )
+        X_odd = np.array( [ X[2*l+1] for l in range(half_N) ] , dtype=complex )
+        x_even = ifft_engine(X_even)
+        x_odd = ifft_engine(X_odd)
+        x_odd_mult = np.array( [ x_odd[n] * cmath.exp(1j*2*math.pi/N*n) for n in range(half_N) ])
+
+        for n in range(half_N) :
+            x[n] = x_even[n % half_N] +  x_odd_mult[n%half_N]
+
+        for n in range(half_N,N) :
+            x[n] = x_even[n % half_N] - x_odd_mult[n%half_N]
+
+    return x
+
+
+
+def old_ifft(X) :
     N = len(X)
     x = np.zeros(N,dtype=complex)
     half_N = N//2
@@ -63,8 +96,10 @@ def ifft(X) :
         X_odd = np.array( [ X[2*l+1] for l in range(half_N) ] , dtype=complex )
         x_even = ifft(X_even)
         x_odd = ifft(X_odd)
+
         for n in range(N) :
             x[n] = x_even[n % half_N] + cmath.exp(1j*2*math.pi/N*n)*x_odd[n % half_N]
+
     return x
    
 
@@ -82,11 +117,11 @@ phase = 0*math.pi
 
 #r = dft(sounds)
 r = fft(sounds)
-#plt.plot(sounds)
-plt.plot(r)
+plt.plot(sounds)
+#plt.plot(r)
 #s = idft(r)
 s = ifft(r) 
 #plt.plot(r.real)
 #plt.plot(r.imag)
-#plt.plot(s)
+plt.plot(s)
 plt.show()
