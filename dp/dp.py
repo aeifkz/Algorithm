@@ -30,3 +30,25 @@ def lcs_bf(x,y) :
 			return lcs_bf(x[:-1],y[:-1]) + 1
 		else :
 			return max(lcs_bf(x[:-1],y),lcs_bf(x,y[:-1]))
+
+def lcs_dict(x,y) :
+	dict = {} 
+	return lcs_dict_engine(x,y,dict)
+
+def lcs_dict_engine(x,y,dict) :
+
+	if len(x) == 0 or len(y) == 0 :
+		return 0 
+
+	if x+y in dict :
+		return dict[x+y]
+	else :
+		if x[-1] == y[-1] :
+			sol = lcs_dict_engine(x[:-1],y[:-1],dict) + 1
+			dict[x[:-1]+y[:-1]] = sol
+		else :
+			sol = max ( lcs_dict_engine(x[:-1],y,dict) , lcs_dict_engine(x,y[:-1],dict) )
+
+		return sol
+
+			
