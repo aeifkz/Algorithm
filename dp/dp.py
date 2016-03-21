@@ -40,8 +40,8 @@ def lcs_dict_engine(x,y,dict) :
 	if len(x) == 0 or len(y) == 0 :
 		return 0 
 
-	if x+y in dict :
-		return dict[x+y]
+	if (x,y) in dict :
+		return dict[(x,y)]
 	else :
 		if x[-1] == y[-1] :
 			sol = lcs_dict_engine(x[:-1],y[:-1],dict) + 1
@@ -50,5 +50,3 @@ def lcs_dict_engine(x,y,dict) :
 			sol = max ( lcs_dict_engine(x[:-1],y,dict) , lcs_dict_engine(x,y[:-1],dict) )
 
 		return sol
-
-			
