@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def fib(n) :
 	if n==0 :
@@ -208,8 +209,231 @@ class Graph(object) :
             self.min_edge[sink] = min_edge
 
             return min_cost
-        
 
+
+def viterbi(states,start_prob,tran_prob,emit_prob,obs) :
+
+    dp_array = [ [] for s in range(len(states)) ]
+
+    for s in range(len(states)) :
+        dp_array[s] = []
+    
+    for s in range(len(states)) :
+        dp_array[s].append(start_prob[states[s]])
+
+    for i in range(len(obs)) :
+        for s in range(len(states)) :
+            value = max( [dp_array[ss][-1] + 
+                             tran_prob[states[ss]][states[s]]*emit_prob[states[ss]][obs[i]] 
+                                     for ss in range(len(states)) ] )
+            dp_array[s].append(value)
+            
+    return dp_array
+
+
+#from open source 
+#http://stackoverflow.com/questions/10237926/convert-string-to-list-of-bits-and-viceversa
+
+import binascii
+
+def text_to_bits(text, encoding='utf-8', errors='surrogatepass'):
+    bits = bin(int(binascii.hexlify(text.encode(encoding, errors)), 16))[2:]
+    return bits.zfill(8 * ((len(bits) + 7) // 8))
+
+def text_from_bits(bits, encoding='utf-8', errors='surrogatepass'):
+    n = int(bits, 2)
+    return int2bytes(n).decode(encoding, errors)
+
+def int2bytes(i):
+    hex_string = '%x' % i
+    n = len(hex_string)
+    return binascii.unhexlify(hex_string.zfill(n + (n & 1))) 
+
+
+def viterbi_enc(fsm,s0,x) :
+    y = []
+    ps = s0
+    for symbol in x :
+        y.append(fsm[ps][symbol]['out'])
+        ps = fsm[ps][symbol]['ns']
+    return y
+
+import random
+
+def add_noise(error_rate,x) :
+    random.seed(10000)
+    y = []
+    for code in x :
+        new_code = ''
+        for b in code :
+            if random.random() < error_rate :
+                new_b = '0' if b == '1' else '1'
+            else :
+                new_b = b 
+            new_code = new_code + new_b
+        y.append(new_code)
+    return y
+
+
+
+def viterbi_dec(fsm_rev,s0,y) :
+    dp_array = [ {} ]
+    path = {}
+
+    for s in fsm_rev.keys() :
+        dp_array[0][s] = 0 if s==s0 else 9999
+        path[s] = [s]
+    
+    for i in range(len(y)) :
+        dp_array.append({})
+        new_path = {}
+        for s in fsm_rev.keys() :
+            min_dist = 999999
+            cur_dist = 999999
+            for s_prev in fsm_rev[s].keys() :
+                dist = ham_dist(y[i],fsm_rev[s][s_prev]['out'])
+                cur_dist = dp_array[i][s_prev] + dist
+                if cur_dist < min_dist :
+                    min_dist = cur_dist
+                    min_state = s_prev
+                dp_array[i+1][s] = min_dist
+                new_path[s] = path[min_state] + [s]
+            path = new_path
+    best_dist , best_s = min( (dp_array[-1][s],s) for s in dp_array[-1].keys()  )
+    return dp_array , path
+
+
+
+
+def ham_dist(a,b) :
+    d = 0
+    for n in range(len(a)) :
+        if a[n] != b[n] :
+            d += 1
+    return d
+
+
+def viterbi_hmm(states,start_prob,tran_prob,emit_prob,obs) :
+    dp_array = [ {} ]
+    path = {}
+
+    for s in states :
+        dp_array[0][s] = math.log10(start_prob[s])
+        path[s] = [s]
+
+    for i in range(len(obs)) :
+        dp_array.append({})
+        new_path = {}
+        for s in states :
+            max_prob , max_state = max( ( dp_array[i][s_prev] +
+                                          math.log10(tran_prob[s_prev][s]) +
+                                          math.log10(emit_prob[s_prev][obs[i]]) , s_prev)
+                                                               for s_prev in states)
+            dp_array[i+1][s] = max_prob
+            new_path[s] = path[max_state] + [s]
+        path = new_path
+    return dp_array,path
+
+
+states = ('H','F' , 'M')
+
+start_prob = { 'H':0.4 , 'F':0.3 , 'M':0.3 }
+
+tran_prob = { 'H':{ 'H':0.4 , 'F':0.3 , 'M':0.3  } ,
+              'F':{ 'H':0.3 , 'F':0.7 , 'M':0.5  } ,
+              'M':{ 'H':0.4 , 'F':0.1 , 'M':0.5  } 
+                                                      }
+
+emit_prob = {
+			   'H':{ 'G':0.2 , 'C':0.6 , 'A':0.1 , 'T':0.1  } ,
+               'F':{ 'G':0.8 , 'C':0.05, 'A':0.05, 'T':0.1  } ,
+               'M':{ 'G':0.2 , 'C':0.2,  'A':0.1,  'T':0.5  } ,
+																	}
+
+observation = list('GCCCATTTGA')
+
+
+result , path = viterbi_hmm(states,start_prob,tran_prob,emit_prob,observation)
+
+print(result)
+print(path)
+
+
+
+ 
+'''
+fsm = {
+          'a' : { '0':{ 'ns':'a' , 'out':'00'} ,
+                  '1':{ 'ns':'b' , 'out':'11'}   } ,
+
+          'b' : { '0':{ 'ns':'c' , 'out':'10'} ,
+                  '1':{ 'ns':'d' , 'out':'01'}   } ,
+
+          'c' : { '0':{ 'ns':'a' , 'out':'11'} ,
+                  '1':{ 'ns':'b' , 'out':'00'}   } ,
+
+          'd' : { '0':{ 'ns':'c' , 'out':'01'} ,
+                  '1':{ 'ns':'d' , 'out':'10'}   }  
+                                                        }
+
+fsm_rev = {
+          'a' : { 'a':{ 'in':'0' , 'out':'00'} ,
+                  'c':{ 'in':'0' , 'out':'11'}   } ,
+
+          'b' : { 'a':{ 'in':'1' , 'out':'11'} ,
+                  'c':{ 'in':'1' , 'out':'00'}   } ,
+
+          'c' : { 'b':{ 'in':'0' , 'out':'10'} ,
+                  'd':{ 'in':'0' , 'out':'01'}   } ,
+
+          'd' : { 'b':{ 'in':'1' , 'out':'01'} ,
+                  'd':{ 'in':'1' , 'out':'10'}   }  
+                                                        }
+'''
+
+
+
+'''
+x = text_to_bits('NT')
+y = viterbi_enc(fsm,'a',x)
+print(y)
+
+z = add_noise(0.05,y)
+print(z)
+
+
+result , path = viterbi_dec(fsm_rev,'a',z)
+'''
+
+
+
+
+'''
+states = ['a','b','c','d']
+start_prob = {'a':1.0 , 'b':0.0 , 'c':0.0 , 'd':0.0}
+tran_prob = { 
+               'a':{'a':0.5 , 'b':0.0 , 'c':0.5 , 'd':0.0} , 
+               'b':{'a':0.5 , 'b':0.0 , 'c':0.5 , 'd':0.0} , 
+               'c':{'a':0.0 , 'b':0.5 , 'c':0.0 , 'd':0.5} , 
+               'd':{'a':0.0 , 'b':0.5 , 'c':0.0 , 'd':0.5}
+            }
+
+emit_prob = {
+               'a':{'00':0.4 , '01':0.1 , '10':0.1 , '11':0.4} , 
+               'b':{'00':0.4 , '01':0.1 , '10':0.1 , '11':0.4} , 
+               'c':{'00':0.1 , '01':0.4 , '10':0.4 , '11':0.1} , 
+               'd':{'00':0.1 , '01':0.4 , '10':0.4 , '11':0.1} 
+            }
+
+obs = ['10','01','11','10','00']
+
+result = viterbi(states,start_prob,tran_prob,emit_prob,obs)
+print(result)
+'''
+
+
+'''
+#for shortest path
 g = Graph()
 [g.add_vertex(v) for v in 'sopqrt']
 
@@ -221,6 +445,7 @@ g.add_edge('o','q',3)
 g.add_edge('q','r',4)
 g.add_edge('q','t',2)
 g.add_edge('r','t',1)
+'''
 
 '''
 g.add_edge('s','o',1)
@@ -233,11 +458,13 @@ g.add_edge('q','t',1)
 g.add_edge('r','t',5)
 '''
 
+'''
 g.reset_path('s')
 print(g.min_cost)
 #print(g.s_path_bf('s','t',0,[]))
 print(g.s_path_dp('s','t'))
 print(g)
+'''
 
 #print(g.inset)
 #print(g.outset)
