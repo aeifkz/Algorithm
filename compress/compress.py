@@ -39,7 +39,7 @@ def huffman_dec(bit_stream,h_tree) :
 
     return text_dec
 
-
+'''
 text = 'aaabcaa'
 print(text)
 
@@ -56,4 +56,4 @@ print(bit_stream)
 
 text_dec = huffman_dec(bit_stream,h_tree)
 print(text_dec)
-
+'''

@@ -61,7 +61,7 @@ class Graph(object) :
             path = self.find_path(source,sink,[])
         return sum( edge.flow for edge in self.get_e(source) )
 
-
+'''
 b = Graph() 
 [b.add_v(v) for v in 'stabcdwxyz']
 
@@ -84,7 +84,7 @@ b.add_e('d','y',1)
 
 b.reset_flow()
 print("Max Flow found from %s to %s is %s" % ( 's','t',b.max_flow('s','t') )  )
-
+'''
 
 '''
 g = Graph()
